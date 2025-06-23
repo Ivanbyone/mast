@@ -2,11 +2,17 @@
 name = "mast"
 version = "0.1.0"
 description = "A modern, Rust-powered task executor and project builder. The must-have tool for fast and reliable builds ⚡"
-homepage = "https://github.com/Ivanbyone/rake"
+categories = ["command-line-utilities"]
+homepage = "https://github.com/Ivanbyone/mast"
+repository = "https://github.com/Ivanbyone/mast"
 readme = "README.md"
 edition = "2024"
 license = "Apache-2.0"
 rust-version = "1.87.0"
+
+[[bin]]
+name = "mast"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
