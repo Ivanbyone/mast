@@ -56,7 +56,7 @@ pub enum Commands {
 ///
 /// ### Arguments
 /// * `force` (&bool) -
-/// * `empty` (&bool) - 
+/// * `empty` (&bool) -
 ///
 pub fn init(force: &bool, empty: &bool) -> Result<(), Error> {
     if !force && metadata(DEFAULT_PATH).is_ok() {
