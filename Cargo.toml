@@ -12,6 +12,11 @@ rust-version = "1.87.0"
 
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+toml = "0.8.23"
+
+[dev-dependencies]
+tempfile = "3.3"
 
 [[bin]]
 name = "mast"

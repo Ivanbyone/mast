@@ -1,16 +1,18 @@
 use std::{
     fs::{metadata, write},
-    io::{Error, ErrorKind, Result},
+    io::{Error, ErrorKind},
+    path::Path,
 };
 
 pub use clap::{Parser, Subcommand};
 
 /// Constants
-static DEFAULT_PATH: &str = "./mast.toml";
+static DEFAULT_PATH: &str = "mast.toml";
 static DEFAULT_CONFIGURATION: &str = r#"[options]
 logging = false
 
 [target.build]
+about = "Build Rust project"
 command = [
     "cargo build",
 ]
@@ -53,12 +55,10 @@ pub enum Commands {
 /// Generate mast.toml
 ///
 /// ### Arguments
-/// * `force`
-/// * `empty`
+/// * `force` (&bool) -
+/// * `empty` (&bool) - 
 ///
-pub fn init(force: &bool, empty: &bool) -> Result<()> {
-    println!("Creating mast.toml...");
-
+pub fn init(force: &bool, empty: &bool) -> Result<(), Error> {
     if !force && metadata(DEFAULT_PATH).is_ok() {
         return Err(Error::new(
             ErrorKind::AlreadyExists,
@@ -75,5 +75,24 @@ pub fn init(force: &bool, empty: &bool) -> Result<()> {
         },
     )?;
 
+    let path = Path::new(DEFAULT_PATH).canonicalize()?;
+
+    println!("Created configuration at: {}", path.display());
+
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile;
+
+    #[test]
+    fn test_init_creates_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::env::set_current_dir(&dir).unwrap();
+
+        init(&false, &false).unwrap();
+        assert!(Path::new(DEFAULT_PATH).exists());
+    }
 }
