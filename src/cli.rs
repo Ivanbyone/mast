@@ -54,6 +54,9 @@ pub enum Commands {
 
     #[command(name = "list", visible_aliases = &["l"])]
     List,
+
+    #[command(name = "run", visible_aliases = &["r"])]
+    Run { target: String },
 }
 
 /// ## Initialize configuration file
@@ -101,6 +104,28 @@ pub fn list() -> Result<(), ReaderError> {
     for (name, target) in &configuration.target {
         println!("target = \"{}\"", name);
         println!("about = \"{}\"\n", target.about);
+    }
+
+    Ok(())
+}
+
+pub fn execute(target_name: &String) -> Result<(), ReaderError> {
+    let config_instance = Config::new();
+    let configuration = config_instance.read_config(DEFAULT_PATH)?;
+
+    match configuration.target.get(target_name) {
+        Some(target) => {
+            println!("Starting: {}", Style::new().bold().paint(target_name));
+            if let Err(e) = target.execute() {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        None => {
+            eprintln!("Unknown target name: {}", target_name);
+            let _ = list();
+            std::process::exit(1);
+        }
     }
 
     Ok(())
