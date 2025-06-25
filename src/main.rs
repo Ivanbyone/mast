@@ -3,7 +3,7 @@ use std::process::ExitCode;
 mod cli;
 mod config;
 
-use cli::{CLI, Commands, Parser, init, list};
+use cli::{CLI, Commands, Parser, execute, init, list};
 
 fn main() -> ExitCode {
     let cli = CLI::parse();
@@ -19,6 +19,14 @@ fn main() -> ExitCode {
 
         Commands::List {} => {
             if let Err(e) = list() {
+                eprintln!("{}", e);
+                return ExitCode::FAILURE;
+            }
+            ExitCode::SUCCESS
+        }
+
+        Commands::Run { target } => {
+            if let Err(e) = execute(target) {
                 eprintln!("{}", e);
                 return ExitCode::FAILURE;
             }
