@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Build (Release)
+        run: cargo build --release
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mast-${{ runner.os }}
+          path: target/release/mast
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: mast-${{ runner.os }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: mast
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
