@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Display, fs::read_to_string};
+use std::{collections::HashMap, fmt::Display, fs::read_to_string, process::Command};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Configuration {
@@ -40,6 +40,39 @@ pub struct Target {
 impl Display for Target {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "\"about\": \"{}\"\n", self.about,)
+    }
+}
+
+impl Target {
+    pub fn execute(&self) -> Result<(), String> {
+        if self.command.is_empty() {
+            return Err("Empty target name".into());
+        }
+
+        for cmd_str in &self.command {
+            let parts: Vec<&str> = cmd_str.split_whitespace().collect();
+            if parts.is_empty() {
+                return Err(format!("Unknown command: '{}'", cmd_str));
+            }
+
+            let (program, args) = parts.split_first().unwrap();
+
+            let status = Command::new(program)
+                .args(args)
+                .status()
+                .map_err(|e| format!("Executer error '{}': {}", cmd_str, e))?;
+
+            // Проверяем статус
+            if !status.success() {
+                return Err(format!(
+                    "Command '{}' exited with error (status code: {:?})",
+                    cmd_str,
+                    status.code()
+                ));
+            }
+        }
+
+        Ok(())
     }
 }
 
