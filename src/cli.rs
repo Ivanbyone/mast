@@ -4,9 +4,12 @@ use std::{
     path::Path,
 };
 
+use ansi_term::Style;
 pub use clap::{Parser, Subcommand};
 
-/// Constants
+use crate::config::{Config, ReaderError};
+
+/// Globals
 static DEFAULT_PATH: &str = "mast.toml";
 static DEFAULT_CONFIGURATION: &str = r#"[options]
 logging = false
@@ -48,6 +51,9 @@ pub enum Commands {
         #[arg(long, action, help_heading = "OPTIONS")]
         empty: bool,
     },
+
+    #[command(name = "list", visible_aliases = &["l"])]
+    List,
 }
 
 /// ## Initialize configuration file
@@ -78,6 +84,24 @@ pub fn init(force: &bool, empty: &bool) -> Result<(), Error> {
     let path = Path::new(DEFAULT_PATH).canonicalize()?;
 
     println!("Created configuration at: {}", path.display());
+
+    Ok(())
+}
+
+pub fn list() -> Result<(), ReaderError> {
+    let config_instance = Config::new();
+    let configuration = config_instance.read_config(DEFAULT_PATH)?;
+
+    println!(
+        "\n{}\n\n{}",
+        Style::new().bold().paint("Options:"),
+        configuration.options,
+    );
+    println!("{}\n", Style::new().bold().paint("Targets:"),);
+    for (name, target) in &configuration.target {
+        println!("target = \"{}\"", name);
+        println!("about = \"{}\"\n", target.about);
+    }
 
     Ok(())
 }
